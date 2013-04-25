@@ -1,0 +1,48 @@
+name:                queue-functional
+version:             0.1.0.0
+synopsis:            Functional queues with amortized constant time operations.
+description:
+    *
+    This package provides two functional implementations of queues based on
+    those presented in Chris Okasaki's "Purely Functional Data Structures".
+    Data.Queue.Simple operates in amortized constant time; Data.Queue.Realtime
+    trades higher overhead for worst-case constant time.
+homepage:            https://github.com/isturdy/queue-functional
+bug-reports:         https://github.com/isturdy/queue-functional/issues
+license:             PublicDomain
+license-file:        UNLICENSE
+author:              Ian Sturdy
+maintainer:          sturdyi12@mail.wlu.edu
+category:            Data Structures
+build-type:          Simple
+cabal-version:       >=1.8
+stability:	     experimental
+tested-with:
+    GHC == 7.6.2
+
+library
+  exposed-modules:
+    Data.Queue.Simple
+    Data.Queue.Realtime
+  GHC-Options:
+    -Wall
+  build-depends:
+    base >= 4 && < 5
+
+source-repository head
+  type: git
+  location: https://github.com/isturdy/queue-functional
+
+test-suite queue-functional-tests
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: tests
+  main-is:        Tests.hs
+
+  build-depends:
+    queue-functional,
+    base ==4.6.*,
+    HUnit ==1.2.5.*,
+    test-framework,
+    test-framework-hunit,
+    QuickCheck ==2.5.*,
+    test-framework-quickcheck2
