@@ -1,5 +1,5 @@
+{-# LANGUAGE Safe          #-}
 {-# LANGUAGE TupleSections #-}
-{-# LANGUAGE Safe #-}
 
 ---------------------------------------------------------------------------
 -- |
@@ -60,8 +60,8 @@ data Queue a = Queue [a] [a] [a]
 rotate :: [a] -> [a] -> [a] -> [a]
 rotate []     (y:[]) a = y:a
 rotate (x:xs) (y:ys) a = x : rotate xs ys (y:a)
-rotate _ _ _= error "Bug in library Data.Queue.Realtime: An invariant \
-                    \varied. Please notify the library maintainer."
+rotate _ _ _ = error "Bug in library Data.Queue.Realtime: An invariant \
+                     \varied. Please notify the library maintainer."
 
 -- Smart constructor (internal). Enforces invariant
 queue :: [a] -> [a] -> [a] -> Queue a
@@ -142,12 +142,12 @@ foldq f a q = foldl f a (toList q)
 -- and item from the queue to a new accumulator and list of items to add
 -- to the back of the queue.
 qrec :: (a -> b -> (a,[b])) -> a -> Queue b -> a
-qrec f acc q = maybe acc process (pop q)
-  where process (x,nq) = qrec f na (addList nq l)
-          where (na,l) = f acc x
+qrec f a q = maybe a process (pop q)
+  where process (x,q') = let (a',l) = f a x
+                         in  qrec f a' (addList q' l)
 
 -- | A monadic version of 'qrec'
 qrecM :: Monad m => (a -> b -> m (a,[b])) -> a -> Queue b -> m a
-qrecM f acc q = maybe (return acc) process (pop q)
-  where process (x,nq) = do (na,l) <- f acc x
-                            qrecM f na (addList nq l)
+qrecM f a q = maybe (return a) process (pop q)
+  where process (x,q') = do (a',l) <- f a x
+                            qrecM f a' (addList q' l)

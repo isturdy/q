@@ -10,6 +10,6 @@ main = defaultMain tests
 
 tests :: [Test]
 tests = [
-          simpleTests
-        , realtimeTests
-        ]
+    simpleTests
+  , realtimeTests
+  ]
