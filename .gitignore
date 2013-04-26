@@ -1,5 +1,7 @@
 dist
 cabal-dev
+report.html
+
 *.o
 *.hi
 *.chi

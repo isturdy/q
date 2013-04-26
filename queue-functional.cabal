@@ -46,3 +46,12 @@ test-suite queue-functional-tests
     test-framework-hunit,
     QuickCheck ==2.5.*,
     test-framework-quickcheck2
+
+benchmark queue-functional-bench
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   bench
+  main-is:          Benchmarks.hs
+  build-depends:
+    queue-functional,
+    base,
+    criterion
