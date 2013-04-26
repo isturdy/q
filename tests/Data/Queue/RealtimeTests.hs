@@ -26,6 +26,8 @@ consistencyTests = testGroup "Consistency" [
   , testProperty "peek"         prop_id_peek
   , testProperty "Read/Show"    prop_id_show
   , testProperty "foldq"        prop_id_foldq
+  , testProperty "addList"      prop_id_addList
+  , testCase     "qrec"       $ qrec (count_if_less 10) 0 (fromList [1]) @?= 143
   ]
 
 prop_empty l1 l2 = (l1++l2==[]) == isEmpty q
@@ -49,7 +51,14 @@ prop_id_show l1 l2 = q == (read $ show q)
 prop_id_foldq l1 l2 = foldl (+) 0 (l1++l2) == foldq (+) 0 q
   where q = toQueue l1 l2 :: Queue Int
 
+prop_id_addList l1 l2 l3 = fromList (l1++l2++l3) == addList q l3
+  where q = toQueue l1 l2 :: Queue Int
+
 -- Makes a queue from two lists; equivalent to '\l1 l2 -> fromList (l1++l2)'
 toQueue :: [a] -> [a] -> Queue a
 toQueue [] l  = fromList l
 toQueue l1 l2 = fromList l1 `addList` l2
+
+count_if_less :: Int -> Int -> Int -> (Int, [Int])
+count_if_less n a e | e > n = (a,[])
+count_if_less n a e         = (a+1,[e+1,e+2])
