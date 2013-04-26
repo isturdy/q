@@ -59,12 +59,6 @@ import           Text.Read
 data Queue a = Queue [a] [a]
 -- Invariant: the first list is empty only if the second is also empty
 
--- Smart constructor (internal). Enforces invariant
-queue :: [a] -> [a] -> Queue a
-queue [] [] = Queue [] []
-queue [] b  = Queue (reverse b) []
-queue f  b  = Queue f b
-
 instance Functor Queue where
   fmap g (Queue f b) = Queue (fmap g f) (fmap g b)
 
@@ -106,6 +100,7 @@ toList (Queue f b) = f++reverse b
 
 -- | /O/(1) worst case. Add an element to the back of the queue.
 enq :: Queue a -> a -> Queue a
+enq (Queue [] []) e = Queue [e] []
 enq (Queue f b) e = Queue f (e:b)
 
 -- | /O(m)/ worst case. Add a list (of length /m/) to the queue.
@@ -121,8 +116,10 @@ peek _               = Nothing
 -- | /O/(1) amortized, /O/(/n/) worst case. Drop the first element of the
 --  queue; if the queue is empty, return it unchanged.
 deq :: Queue a -> Queue a
-deq (Queue (_:f) b) = queue f b
-deq _               = Queue [] []
+deq (Queue []    []) = Queue [] []
+deq (Queue [_]   b ) = Queue (reverse b) []
+deq (Queue (_:f) b ) = Queue f b
+deq _                = Queue [] []
 
 -- | /O/(1) amortized, /O/(/n/) worst case. Return 'Just' the first element
 -- and the tail of the queue, or 'Nothing' for an empty queue.
@@ -137,7 +134,7 @@ isEmpty _             = False
 -- Recursive combinators
 -- | Fold over a queue in removal order.
 foldq :: (a -> b -> a) -> a -> Queue b -> a
-foldq f a q = foldl f a (toList q)
+foldq g acc (Queue f b) = foldr (flip g) (foldl g acc f) b
 
 -- | General recursion over queues. The function is from an accumulator
 -- and item from the queue to a new accumulator and list of items to add

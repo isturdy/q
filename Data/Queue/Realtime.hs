@@ -97,7 +97,7 @@ instance Ord a => Ord (Queue a) where
 
 -- | /O/(/n/). Create a queue from a list.
 fromList :: [a] -> Queue a
-fromList = foldl' enq mempty
+fromList l = Queue l [] l
 
 -- | /O/(/n/). Turn a queue into a list in order of removal.
 toList :: Queue a -> [a]
@@ -136,7 +136,7 @@ isEmpty _             = False
 -- Recursive combinators
 -- | Fold over a queue in removal order.
 foldq :: (a -> b -> a) -> a -> Queue b -> a
-foldq f a q = foldl f a (toList q)
+foldq g acc (Queue f b _) = foldr (flip g) (foldl g acc f) b
 
 -- | General recursion over queues. The function is from an accumulator
 -- and item from the queue to a new accumulator and list of items to add
