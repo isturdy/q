@@ -1,4 +1,4 @@
-name:                queue-functional
+name:                q
 version:             0.1.0.0
 synopsis:            Functional queues with amortized constant time operations.
 description:
