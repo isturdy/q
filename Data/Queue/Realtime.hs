@@ -1,5 +1,4 @@
-{-# LANGUAGE Safe          #-}
-{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE Safe #-}
 
 ---------------------------------------------------------------------------
 -- |
@@ -16,34 +15,14 @@
 --     <https://www.cs.cmu.edu/~rwh/theses/okasaki.pdf>
 --
 -- The key operations 'enq', 'peek', and 'deq' (along with the derivative
--- 'pop') all run in constant time, at the cost of greater overhead than
--- the implimentation in 'Data.Queue.Simple'.
+-- 'pop') all have constant worst-case time, at the cost of greater
+-- overhead than the implimentation in 'Data.Queue.Simple'.
 ---------------------------------------------------------------------------
 
 module Data.Queue.Realtime (
   -- * Queue type
-    Queue
-
-  -- ** Construction
-  , fromList
-
-  -- ** Insertion
-  , enq
-  , addList
-
-  -- ** Access/Removal
-  , peek
-  , deq
-  , pop
-
-  -- ** Recursion
-  , foldq
-  , qrec
-  , qrecM
-
-  -- ** Utility
-  , isEmpty
-  , toList
+    RealtimeQueue
+  , Queue (..)
 
   ) where
 
@@ -52,7 +31,9 @@ import           Data.List
 import           Data.Monoid
 import           Text.Read
 
-data Queue a = Queue [a] [a] [a]
+import           Data.Queue.Class
+
+data RealtimeQueue a = RealtimeQueue [a] [a] [a]
 -- Invariant: length of the third list equals the difference in lengths
 -- of the other two.
 
@@ -64,90 +45,62 @@ rotate _ _ _ = error "Bug in library Data.Queue.Realtime: An invariant \
                      \varied. Please notify the library maintainer."
 
 -- Smart constructor (internal). Enforces invariant
-queue :: [a] -> [a] -> [a] -> Queue a
-queue [] [] []  = Queue [] [] []
-queue f b (_:t) = Queue f b t
-queue f b []    = Queue f' [] f'
+queue :: [a] -> [a] -> [a] -> RealtimeQueue a
+queue [] [] []  = RealtimeQueue [] [] []
+queue f b (_:t) = RealtimeQueue f b t
+queue f b []    = RealtimeQueue f' [] f'
   where f' = rotate f b []
 
-instance Functor Queue where
-  fmap g (Queue f b s) = Queue (fmap g f) (fmap g b) (fmap g s)
+instance Functor RealtimeQueue where
+  fmap g (RealtimeQueue f b s) = RealtimeQueue (fmap g f) (fmap g b) (fmap g s)
 
 -- | Appending queues of length /m/ and /n/ is worst-case/O/(/m/+/n/)
-instance Monoid (Queue a) where
-  mempty = Queue [] [] []
+instance Monoid (RealtimeQueue a) where
+  mempty = empty
   mappend = foldq enq
 
-instance Read a => Read (Queue a) where
+instance Read a => Read (RealtimeQueue a) where
   readPrec = parens . prec 10 $ do
     Ident "fromList" <- lexP
     liftM fromList readPrec
 
   readListPrec = readListPrecDefault
 
-instance Show a => Show (Queue a) where
+instance Show a => Show (RealtimeQueue a) where
   showsPrec d q  = showParen (d > 10) $
     showString "fromList " . shows (toList q)
 
-instance Eq a => Eq (Queue a) where
+instance Eq a => Eq (RealtimeQueue a) where
   q1 == q2 = toList q1 == toList q2
 
-instance Ord a => Ord (Queue a) where
+instance Ord a => Ord (RealtimeQueue a) where
   compare q1 q2 = compare (toList q1) (toList q2)
 
--- | /O/(/n/). Create a queue from a list.
-fromList :: [a] -> Queue a
-fromList l = Queue l [] l
+instance Queue RealtimeQueue where
+  empty = RealtimeQueue [] [] []
 
--- | /O/(/n/). Turn a queue into a list in order of removal.
-toList :: Queue a -> [a]
-toList (Queue f b _) = f++reverse b
+  -- | /O/(/n/).
+  fromList l = RealtimeQueue l [] l
 
--- | /O/(1). Add an element to the back of the queue.
-enq :: Queue a -> a -> Queue a
-enq (Queue f b s) e = queue f (e:b) s
+  -- | /O/(1).
+  enq (RealtimeQueue f b s) e = queue f (e:b) s
 
--- | /O(m)/. Add a list (of length /m/) to the queue.
-addList :: Queue a -> [a] -> Queue a
-addList = foldl' enq
+  -- | /O/(1).
+  deq (RealtimeQueue (_:f) b s) = queue f b s
+  deq _                         = RealtimeQueue [] [] []
 
--- | /O/(1). Look at the first element of the queue. Returns
--- 'Nothing' iff the queue is empty.
-peek :: Queue a -> Maybe a
-peek (Queue (h:_) _ _) = Just h
-peek _                 = Nothing
+  -- | /O/(1).
+  peek (RealtimeQueue (h:_) _ _) = Just h
+  peek _                         = Nothing
 
--- | /O/(1). Drop the first element of the
---  queue; if the queue is empty, return it unchanged.
-deq :: Queue a -> Queue a
-deq (Queue (_:f) b s) = queue f b s
-deq _                 = Queue [] [] []
+  -- | /O(m)/.
+  addList = foldl' enq
 
--- | /O/(1). Return 'Just' the first element
--- and the tail of the queue, or 'Nothing' for an empty queue.
-pop :: Queue a -> Maybe (a, Queue a)
-pop q = liftM (,deq q) $ peek q
+  foldq g acc (RealtimeQueue f b _) = foldr (flip g) (foldl g acc f) b
 
--- | /O/(1). Determine if a queue is empty.
-isEmpty :: Queue a -> Bool
-isEmpty (Queue [] [] _) = True
-isEmpty _             = False
+  -- | /O/(/n/).
+  toList (RealtimeQueue f b _) = f++reverse b
 
--- Recursive combinators
--- | Fold over a queue in removal order.
-foldq :: (a -> b -> a) -> a -> Queue b -> a
-foldq g acc (Queue f b _) = foldr (flip g) (foldl g acc f) b
-
--- | General recursion over queues. The function is from an accumulator
--- and item from the queue to a new accumulator and list of items to add
--- to the back of the queue.
-qrec :: (a -> b -> (a,[b])) -> a -> Queue b -> a
-qrec f a q = maybe a process (pop q)
-  where process (x,q') = let (a',l) = f a x
-                         in  qrec f a' (addList q' l)
-
--- | A monadic version of 'qrec'
-qrecM :: Monad m => (a -> b -> m (a,[b])) -> a -> Queue b -> m a
-qrecM f a q = maybe (return a) process (pop q)
-  where process (x,q') = do (a',l) <- f a x
-                            qrecM f a' (addList q' l)
+  -- | /O/(1).
+  isEmpty (RealtimeQueue [] [] _) = True
+  isEmpty _             = False

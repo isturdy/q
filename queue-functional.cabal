@@ -24,6 +24,7 @@ library
   exposed-modules:
     Data.Queue.Simple
     Data.Queue.Realtime
+    Data.Queue.Class
   GHC-Options:
     -Wall
   build-depends:
