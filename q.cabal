@@ -1,4 +1,4 @@
-name:                queue-functional
+name:                q
 version:             0.1.0.0
 synopsis:            Functional queues with amortized constant time operations.
 description:
@@ -7,8 +7,8 @@ description:
     those presented in Chris Okasaki's "Purely Functional Data Structures".
     Data.Queue.Simple operates in amortized constant time; Data.Queue.Realtime
     trades higher overhead for worst-case constant time.
-homepage:            https://github.com/isturdy/queue-functional
-bug-reports:         https://github.com/isturdy/queue-functional/issues
+homepage:            https://github.com/isturdy/q
+bug-reports:         https://github.com/isturdy/q/issues
 license:             PublicDomain
 license-file:        UNLICENSE
 author:              Ian Sturdy
@@ -32,15 +32,15 @@ library
 
 source-repository head
   type: git
-  location: https://github.com/isturdy/queue-functional
+  location: https://github.com/isturdy/q
 
-test-suite queue-functional-tests
+test-suite q-tests
   type:           exitcode-stdio-1.0
   hs-source-dirs: tests
   main-is:        Tests.hs
 
   build-depends:
-    queue-functional,
+    q,
     base ==4.6.*,
     HUnit ==1.2.5.*,
     test-framework,
@@ -48,11 +48,11 @@ test-suite queue-functional-tests
     QuickCheck ==2.5.*,
     test-framework-quickcheck2
 
-benchmark queue-functional-bench
+benchmark q-bench
   type:             exitcode-stdio-1.0
   hs-source-dirs:   bench
   main-is:          Benchmarks.hs
   build-depends:
-    queue-functional,
+    q,
     base,
     criterion
