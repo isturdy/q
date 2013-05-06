@@ -12,6 +12,10 @@
 
 module Data.Queue.Class where
 
+import           Data.Foldable hiding (toList)
+import qualified Data.Foldable as F
+import qualified Data.Sequence as S
+
 -- | A class for queues. Minimal definition is 'empty', 'enq', 'peek',
 -- 'deq' (or 'empty', 'enq', and 'pop', but this will likely lead to an
 -- inefficient 'peek'); others, 'isEmpty', 'foldq', 'fromList', and
@@ -66,3 +70,26 @@ class Queue q where
   qrecM f a q = maybe (return a) process (pop q)
     where process (x,q') = do (a',l) <- f a x
                               qrecM f a' (addList q' l)
+
+instance Queue S.Seq where
+  empty = S.empty
+
+  fromList = S.fromList
+
+  enq = (S.|>)
+
+  addList = foldl' enq
+
+  deq q = case S.viewl q of
+    S.EmptyL  -> q
+    _ S.:< q' -> q'
+
+  peek q = case S.viewl q of
+    S.EmptyL -> Nothing
+    e S.:< _ -> Just e
+
+  foldq = foldl'
+
+  toList = F.toList
+
+  isEmpty = S.null

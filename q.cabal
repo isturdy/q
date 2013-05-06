@@ -28,7 +28,8 @@ library
   GHC-Options:
     -Wall
   build-depends:
-    base >= 4 && < 5
+    base >= 4 && < 5,
+    containers == 0.5.*
 
 source-repository head
   type: git
