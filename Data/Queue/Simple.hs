@@ -85,15 +85,15 @@ instance Queue SimpleQueue where
   deq (SimpleQueue []    []) = SimpleQueue [] []
   deq (SimpleQueue [_]   b ) = SimpleQueue (reverse b) []
   deq (SimpleQueue (_:f) b ) = SimpleQueue f b
-  deq _                = SimpleQueue [] []
+  deq _                      = SimpleQueue [] []
 
   -- | /O/(1) worst case.
   peek (SimpleQueue (h:_) _) = Just h
-  peek _               = Nothing
+  peek _                     = Nothing
 
   -- | /O/(1).
   isEmpty (SimpleQueue [] []) = True
-  isEmpty _             = False
+  isEmpty _                   = False
 
   -- | /O/(/n/).
   toList (SimpleQueue f b) = f++reverse b

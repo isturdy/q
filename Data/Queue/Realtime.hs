@@ -17,6 +17,11 @@
 -- The key operations 'enq', 'peek', and 'deq' (along with the derivative
 -- 'pop') all have constant worst-case time, at the cost of greater
 -- overhead than the implimentation in 'Data.Queue.Simple'.
+--
+-- This algorithm differs slightly from Okasaki's, in that it does not
+-- memoize the results of forcing lazy values. However, since the key
+-- operations have /O/(1) worst-case complexity, it still offers real-time
+-- performance.
 ---------------------------------------------------------------------------
 
 module Data.Queue.Realtime (

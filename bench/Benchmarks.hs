@@ -1,10 +1,10 @@
 module Main where
 
-import Criterion.Main
-import Criterion.Config
+import           Criterion.Config
+import           Criterion.Main
 
-import Data.Queue.SimpleBench
-import Data.Queue.RealtimeBench
+import           Data.Queue.RealtimeBench
+import           Data.Queue.SimpleBench
 
 main = defaultMainWith myConfig (return ())  [
     simpleBench

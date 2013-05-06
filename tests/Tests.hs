@@ -1,9 +1,9 @@
 module Main where
 
-import           Test.Framework                 (Test, defaultMain)
+import           Test.Framework           (Test, defaultMain)
 
-import           Data.Queue.SimpleTests
 import           Data.Queue.RealtimeTests
+import           Data.Queue.SimpleTests
 
 main :: IO ()
 main = defaultMain tests
