@@ -6,7 +6,9 @@ description:
     This package provides two functional implementations of queues based on
     those presented in Chris Okasaki's "Purely Functional Data Structures".
     Data.Queue.Simple operates in amortized constant time; Data.Queue.Realtime
-    trades higher overhead for worst-case constant time.
+    trades higher overhead for worst-case constant time. There is also an
+    instance for Data.Sequence's 'Seq', but it is somewhat slower than
+    'SimpleQueue' without any realtime guarantees.
 homepage:            https://github.com/isturdy/q
 bug-reports:         https://github.com/isturdy/q/issues
 license:             PublicDomain
@@ -43,6 +45,7 @@ test-suite q-tests
   build-depends:
     q,
     base ==4.6.*,
+    containers == 0.5.*,
     HUnit ==1.2.5.*,
     test-framework,
     test-framework-hunit,
@@ -56,4 +59,5 @@ benchmark q-bench
   build-depends:
     q,
     base,
+    containers,
     criterion
